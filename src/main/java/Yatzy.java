@@ -89,7 +89,8 @@ public class Yatzy {
         int score = 0;
 
         for(int roll : numberOfTimesEachRollOccurred.keySet()) {
-            if(numberOfTimesEachRollOccurred.get(roll) >= 2) {
+            int numberOfTimesSeen = numberOfTimesEachRollOccurred.get(roll);
+            if(numberOfTimesSeen >= 2) {
                 numberOfPairsSeen++;
                 score += roll * 2;
             }
