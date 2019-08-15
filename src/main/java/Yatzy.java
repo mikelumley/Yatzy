@@ -4,13 +4,8 @@ import java.util.Hashtable;
 
 public class Yatzy {
 
-    private static final int YATZY_SCORE = 50;
-    private static final int SMALL_STRAIGH_SCORE = 15;
-    private static final int LARGE_STRAIGHT_SCORE = 20;
-
-    public static int calcScore(ArrayList<Die> dice, String category) throws InvalidCategoryException {
-        String categoryAsLowerCase = category.toLowerCase();
-        switch (categoryAsLowerCase) {
+    public static int calcScore(ArrayList<Die> dice, String category) {
+        switch (category) {
             case "chance":
                 return Yatzy.calcChanceScore(dice);
             case "yatzy":
@@ -28,25 +23,25 @@ public class Yatzy {
             case "sixes":
                 return Yatzy.calcSingleNumberScore(6, dice);
             case "pair":
-                return Yatzy.calcPairScore(dice);
-            case "2 pair":
+                return Yatzy.calcNOfAKindScore(dice, 2);
+            case "two pair":
                 return Yatzy.calcTwoPairScore(dice);
-            case "3 of a kind":
-                return Yatzy.calcThreeOfAKindScore(dice);
-            case "4 of a kind":
-                return Yatzy.calcFourOfAKindScore(dice);
+            case "three of a kind":
+                return Yatzy.calcNOfAKindScore(dice, 3);
+            case "four of a kind":
+                return Yatzy.calcNOfAKindScore(dice, 4);
             case "small straight":
-                return Yatzy.calcSmallStraightScore(dice);
+                return Yatzy.calcStraightScore(dice, true);
             case "large straight":
-                return Yatzy.calcLargeStraightScore(dice);
+                return Yatzy.calcStraightScore(dice, false);
             case "full house":
                 return Yatzy.calcFullHouseScore(dice);
             default:
-                throw new InvalidCategoryException("Error: Category not recognized");
+                return 0;
         }
     }
 
-    public static int calcChanceScore(ArrayList<Die> dice) {
+    private static int calcChanceScore(ArrayList<Die> dice) {
         int score = 0;
         for(Die die : dice) {
             int currentRoll = die.getValue();
@@ -55,7 +50,8 @@ public class Yatzy {
         return score;
     }
 
-    public static int calcYatzyScore(ArrayList<Die> dice) {
+    private static int calcYatzyScore(ArrayList<Die> dice) {
+        final int YATZY_SCORE = 50;
         int firstDieRoll = dice.get(0).getValue();
         for(Die die : dice) {
             int currentRoll = die.getValue();
@@ -66,7 +62,7 @@ public class Yatzy {
         return YATZY_SCORE;
     }
 
-    public static int calcSingleNumberScore(int number, ArrayList<Die> dice) {
+    private static int calcSingleNumberScore(int number, ArrayList<Die> dice) {
         int score = 0;
         for(Die die : dice) {
             int currentRoll = die.getValue();
@@ -77,19 +73,15 @@ public class Yatzy {
         return score;
     }
 
-    public static int calcPairScore(ArrayList<Die> dice) {
-        Hashtable<Integer, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
-        int pairRoll = Yatzy.findRollThatOccurredNOrMoreTimes(numberOfTimesEachRollOccurred, 2);
-        return pairRoll * 2;
-    }
-
-    public static int calcTwoPairScore(ArrayList<Die> dice) {
-        Hashtable<Integer, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
+    private static int calcTwoPairScore(ArrayList<Die> dice) {
+        Hashtable<Die, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
         int numberOfPairsSeen = 0;
         int score = 0;
+        ArrayList<Die> sortedUniqueDice = Yatzy.sortUniqueRollsInDescendingOrder(numberOfTimesEachRollOccurred);
 
-        for(int roll : numberOfTimesEachRollOccurred.keySet()) {
-            int numberOfTimesSeen = numberOfTimesEachRollOccurred.get(roll);
+        for(Die die : sortedUniqueDice) {
+            int roll = die.getValue();
+            int numberOfTimesSeen = numberOfTimesEachRollOccurred.get(die);
             if(numberOfTimesSeen >= 2) {
                 numberOfPairsSeen++;
                 score += roll * 2;
@@ -98,48 +90,40 @@ public class Yatzy {
         return numberOfPairsSeen == 2 ? score : 0;
     }
 
-    public static int calcThreeOfAKindScore(ArrayList<Die> dice) {
-        Hashtable<Integer, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
-        int threeOfAKindRoll = Yatzy.findRollThatOccurredNOrMoreTimes(numberOfTimesEachRollOccurred, 3);
-        return threeOfAKindRoll * 3;
+    private static int calcNOfAKindScore(ArrayList<Die> dice, int occurrences) {
+        Hashtable<Die, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
+        Die nOfAKindDie = Yatzy.findHighestDieThatOccurredNOrMoreTimes(numberOfTimesEachRollOccurred, occurrences);
+        if(nOfAKindDie != null) {
+            return nOfAKindDie.getValue() * occurrences;
+        }
+        else {
+            return 0;
+        }
     }
 
-    public static int calcFourOfAKindScore(ArrayList<Die> dice) {
-        Hashtable<Integer, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
-        int fourOfAKindRoll = Yatzy.findRollThatOccurredNOrMoreTimes(numberOfTimesEachRollOccurred, 4);
-        return fourOfAKindRoll * 4;
-    }
+    private static int calcStraightScore(ArrayList<Die> dice, boolean calcSmallStraight) {
+        final int SMALL_STRAIGHT_SCORE = 15;
+        final int LARGE_STRAIGHT_SCORE = 20;
 
-    public static int calcSmallStraightScore(ArrayList<Die> dice) {
         Collections.sort(dice);
+
         for (int i = 0; i < dice.size(); ++i){
             int currentRoll = dice.get(i).getValue();
-            int nextValueInStraight = i + 1;
+            int nextValueInStraight = calcSmallStraight ? i + 1 : i + 2;
             if (currentRoll != nextValueInStraight){
                 return 0;
             }
         }
-        return SMALL_STRAIGH_SCORE;
+        return calcSmallStraight ? SMALL_STRAIGHT_SCORE : LARGE_STRAIGHT_SCORE;
     }
 
-    public static int calcLargeStraightScore(ArrayList<Die> dice) {
-        Collections.sort(dice);
-        for (int i = 0; i < dice.size(); ++i){
-            int currentRoll = dice.get(i).getValue();
-            int nextValueInStraight = i + 2;
-            if (currentRoll != nextValueInStraight){
-                return 0;
-            }
-        }
-        return LARGE_STRAIGHT_SCORE;
-    }
-
-    public static int calcFullHouseScore(ArrayList<Die> dice) {
-        Hashtable<Integer, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
+    private static int calcFullHouseScore(ArrayList<Die> dice) {
+        Hashtable<Die, Integer> numberOfTimesEachRollOccurred = Yatzy.findNumberOfTimesEachRollOccurred(dice);
         int score = 0;
-
-        for(int roll : numberOfTimesEachRollOccurred.keySet()) {
-            int numberOfTimesSeenRoll = numberOfTimesEachRollOccurred.get(roll);
+        ArrayList<Die> sortedUniqueDice = Yatzy.sortUniqueRollsInDescendingOrder(numberOfTimesEachRollOccurred);
+        for(Die die : sortedUniqueDice) {
+            int roll = die.getValue();
+            int numberOfTimesSeenRoll = numberOfTimesEachRollOccurred.get(die);
 
             if(numberOfTimesSeenRoll == 3) {
                 score += roll * 3;
@@ -154,23 +138,30 @@ public class Yatzy {
         return score;
     }
 
-    private static Hashtable<Integer, Integer> findNumberOfTimesEachRollOccurred(ArrayList<Die> dice) {
-        Hashtable<Integer, Integer> rollCounts = new Hashtable<>();
+    private static Hashtable<Die, Integer> findNumberOfTimesEachRollOccurred(ArrayList<Die> dice) {
+        Hashtable<Die, Integer> rollCounts = new Hashtable<>();
         for(Die die : dice) {
-            int currentRoll = die.getValue();
-            int numberOfTimesSeen = rollCounts.getOrDefault(currentRoll, 0) + 1;
-            rollCounts.put(currentRoll, numberOfTimesSeen);
+            int numberOfTimesSeen = rollCounts.getOrDefault(die, 0) + 1;
+            rollCounts.put(die, numberOfTimesSeen);
         }
         return rollCounts;
     }
 
-    private static int findRollThatOccurredNOrMoreTimes(Hashtable<Integer, Integer> numberOfTimesEachRollOccurred, int occurrences) {
-        for(int roll : numberOfTimesEachRollOccurred.keySet()) {
-            int numberOfTimesSeen = numberOfTimesEachRollOccurred.get(roll);
+    private static Die findHighestDieThatOccurredNOrMoreTimes(Hashtable<Die, Integer> numberOfTimesEachRollOccurred, int occurrences) {
+        ArrayList<Die> sortedUniqueDice = Yatzy.sortUniqueRollsInDescendingOrder(numberOfTimesEachRollOccurred);
+        for(Die die : sortedUniqueDice) {
+            int numberOfTimesSeen = numberOfTimesEachRollOccurred.get(die);
             if(numberOfTimesSeen >= occurrences) {
-                return roll;
+                return die;
             }
         }
-        return 0;
+        return null;
+    }
+
+    private static ArrayList<Die> sortUniqueRollsInDescendingOrder(Hashtable<Die, Integer> numberOfTimesEachRollOccurred) {
+        ArrayList<Die> rolls = new ArrayList<>(numberOfTimesEachRollOccurred.keySet());
+        Collections.sort(rolls);
+        Collections.reverse(rolls);
+        return rolls;
     }
 }

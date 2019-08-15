@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Die implements Comparable{
     private int value;
 
@@ -21,5 +23,16 @@ public class Die implements Comparable{
         else {
             return 1;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Die die = (Die) obj;
+        return this.value == die.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }

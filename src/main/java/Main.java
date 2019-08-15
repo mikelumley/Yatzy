@@ -16,13 +16,9 @@ public class Main {
         System.out.println("Select a category:");
         String category = keyboardInput.nextLine();
 
-        try {
-            int score = Yatzy.calcScore(dice, category);
-            System.out.println("Your score is:");
-            System.out.println(score);
-        } catch(InvalidCategoryException e) {
-            System.out.println(e.toString());
-        }
+        int score = Yatzy.calcScore(dice, category);
+        System.out.println("Your score is:");
+        System.out.println(score);
     }
 
     private static ArrayList<Die> setupDice(int d1, int d2, int d3, int d4, int d5) {
