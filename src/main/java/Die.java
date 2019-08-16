@@ -1,6 +1,6 @@
 import java.util.Objects;
 
-public class Die implements Comparable{
+public class Die implements Comparable {
     public static final int MAX_VALUE = 6;
     public static final int MIN_VALUE = 1;
 
@@ -17,10 +17,10 @@ public class Die implements Comparable{
     @Override
     public int compareTo(Object obj) {
         Die otherDie = (Die) obj;
-        if(this.value < otherDie.value) {
+        if (this.value < otherDie.value) {
             return -1;
         }
-        else if(this.value == otherDie.value) {
+        else if (this.value == otherDie.value) {
             return 0;
         }
         else {

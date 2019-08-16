@@ -1,4 +1,4 @@
-public class InvalidCategoryException extends Exception {
+public class InvalidCategoryException extends RuntimeException {
     public InvalidCategoryException(String message) {
         super(message);
     }
