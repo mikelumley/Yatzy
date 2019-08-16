@@ -1,6 +1,9 @@
 import java.util.Objects;
 
 public class Die implements Comparable{
+    public static final int MAX_VALUE = 6;
+    public static final int MIN_VALUE = 1;
+
     private int value;
 
     public Die(int value) {

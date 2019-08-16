@@ -255,4 +255,37 @@ public class YatzyTest {
         int score = Yatzy.calcScore(dice, "full house");
         assertEquals(0, score);
     }
+
+    // User Input
+    @Test
+    public void Given_TextInputOfDice11126_When_ProcessingInput_Then_ReturnListOfDiceWithValues11122() {
+        String input = "1,1,1,2,6";
+        ArrayList<Die> expected = setupDice(1,1,1,2,6);
+        ArrayList<Die> dice = UserInput.processRollsInput(input);
+        assertEquals(expected, dice);
+    }
+
+    @Test (expected = InvalidInputException.class)
+    public void Given_TextInputOfDice111222_When_ProcessingInput_Then_ThrowInvalidInputException() {
+        String input = "1,1,1,2,2,2";
+        UserInput.processRollsInput(input);
+    }
+
+    @Test (expected = InvalidInputException.class)
+    public void Given_TextInputOfDice12_When_ProcessingInput_Then_ThrowInvalidInputException() {
+        String input = "1,2";
+        UserInput.processRollsInput(input);
+    }
+
+    @Test (expected = InvalidInputException.class)
+    public void Given_TextInputOfDice17122_When_ProcessingInput_Then_ThrowInvalidInputException() {
+        String input = "1,7,1,2,2";
+        UserInput.processRollsInput(input);
+    }
+
+    @Test (expected = InvalidInputException.class)
+    public void Given_TextInputOfDice10122_When_ProcessingInput_Then_ThrowInvalidInputException() {
+        String input = "1,0,1,2,2";
+        UserInput.processRollsInput(input);
+    }
 }
