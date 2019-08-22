@@ -1,7 +1,30 @@
 import java.util.ArrayList;
 
 public class UserInput {
-    public static ArrayList<Die> processRollsInput(String diceInputString) {
+
+    public static ArrayList<Die> askForDiceRolls(IKeyboardInput keyboardInput) {
+        try {
+            System.out.println("Enter 5 dice rolls:");
+            String diceRolls = keyboardInput.nextLine();
+            return UserInput.processRollsInput(diceRolls);
+        } catch (InvalidInputException error) {
+            System.out.println(error.toString());
+            return UserInput.askForDiceRolls(keyboardInput);
+        }
+    }
+
+    public static Category askForCategory(IKeyboardInput keyboardInput) {
+        try {
+            System.out.println("Enter a category:");
+            String category = keyboardInput.nextLine();
+            return UserInput.processCategoryInput(category);
+        } catch (InvalidCategoryException error) {
+            System.out.println(error.toString());
+            return UserInput.askForCategory(keyboardInput);
+        }
+    }
+
+    private static ArrayList<Die> processRollsInput(String diceInputString) {
         final int NUMBER_OF_DICE_REQUIRED = 5;
         String[] rollsAsStrings = diceInputString.split(",");
 
@@ -23,7 +46,7 @@ public class UserInput {
         return dice;
     }
 
-    public static Category processCategoryInput(String categoryInputString) {
+    private static Category processCategoryInput(String categoryInputString) {
         switch (categoryInputString) {
             case "chance":
                 return Category.CHANCE;
